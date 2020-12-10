@@ -6,7 +6,7 @@ class ThemedText extends StatelessWidget {
   final Color _color;
   FontWeight _weight = FontWeight.normal;
 
-  ThemedText(this._text, this._fontSize, this._color, {weight}) {
+  ThemedText(this._text, this._fontSize, this._color, {FontWeight weight}) {
     this._weight = weight;
   }
 

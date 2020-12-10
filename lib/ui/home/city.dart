@@ -1,68 +1,128 @@
 import 'package:flutter/material.dart';
-import 'package:weatherApp/utils/colors.dart';
+import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:weather_icons/weather_icons.dart';
+
+import 'package:weatherApp/utils/colors.dart';
+import 'package:weatherApp/utils/geolocation.dart';
+import 'package:weatherApp/bloc/cityBloc.dart';
+import 'package:weatherApp/bloc/currentWeatherBloc.dart';
+import 'package:weatherApp/utils/matchIcon.dart';
+import 'package:weatherApp/requests/weather.dart';
+
 import '../common/common.dart';
 import 'chart.dart';
 import 'news.dart';
 
-class CityWeather extends StatelessWidget {
-  Widget _buildWeatherIcon() {
-    return Icon(WeatherIcons.rain, size: 50, color: SolarizedColorScheme.red);
+class CityWeather extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return _CityWeatherState();
+  }
+}
+
+class _CityWeatherState extends State<CityWeather> {
+  final _cityBloc = BlocProvider.getBloc<CityBloc>();
+  final _currentWeatherBloc = BlocProvider.getBloc<CurrentWeatherBloc>();
+  String cityName;
+  String currentTemperature;
+  String currentFeel;
+  String currentWindSpeed;
+  String currentWeatherStatus;
+  IconData icon = WeatherIcons.earthquake;
+
+  @override
+  initState() {
+    super.initState();
+    getCurrentCity();
+    sendCurrentWeatherBlocs();
   }
 
-  Widget _buildCityName() {
+  Widget _buildWeatherIcon(IconData icon) {
+    return Icon(icon, size: 40, color: SolarizedColorScheme.red);
+  }
+
+  Widget _buildWeatherState(String state) {
     return Container(
-        child: ThemedText("LONDON", 35, SolarizedColorScheme.mainBG));
+        margin: EdgeInsets.all(10),
+        child: ThemedText(state == null ? 'Getting...' : state.toLowerCase(),
+            12, SolarizedColorScheme.mainBG));
   }
 
-  Widget _buildTemperatureItem(String name, String value) {
+  Widget _buildCityNameWidget() {
+    return StreamBuilder(
+        stream: _cityBloc.cityStream,
+        builder: (_, AsyncSnapshot<String> snaphot) {
+          if (snaphot.hasData) {
+            cityName = snaphot.data;
+          }
+          return Container(
+              child: ThemedText(cityName == null ? 'Getting...' : cityName, 20,
+                  SolarizedColorScheme.mainBG));
+        });
+  }
+
+  Widget _buildTemperatureItem(String name, String value, String ed) {
     return Container(
       child: Column(
         children: [
           ThemedText(name, 14, SolarizedColorScheme.secondaryBG),
-          ThemedText(value, 14, SolarizedColorScheme.secondaryBG),
+          ThemedText((value == null ? '-' : value) + ed, 14,
+              SolarizedColorScheme.secondaryBG),
         ],
       ),
     );
   }
 
-  Widget _buildTemperature() {
+  Widget _buildTemperature(String temp, String feel, String speed) {
     return Container(
         child: Row(mainAxisSize: MainAxisSize.min, children: [
-      _buildTemperatureItem("Actual", "15"),
-      SizedBox(width: 10),
-      _buildTemperatureItem("Feels", "15"),
-      SizedBox(width: 10),
-      _buildTemperatureItem("Wind Speed", "237ms"),
+      _buildTemperatureItem("Temparature", temp, "°C"),
+      SizedBox(width: 15),
+      _buildTemperatureItem("Feelings", feel, "°C"),
+      SizedBox(width: 15),
+      _buildTemperatureItem("Wind Speed", speed, "ms"),
     ]));
   }
 
   Widget _buildUpper() {
-    return Container(
-        decoration: new BoxDecoration(
-            color: SolarizedColorScheme.accentFG,
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(15.0),
-              bottomRight: Radius.circular(15.0),
-            )),
-        width: double.infinity,
-        padding: EdgeInsets.fromLTRB(40, 20, 40, 60),
-        child: Container(
-            padding: EdgeInsets.all(10),
-            decoration: BoxDecoration(
-              color: SolarizedColorScheme.transparent,
-            ),
-            child: Center(
-                child: Container(
-              child: Column(children: [
-                _buildWeatherIcon(),
-                SizedBox(
-                  height: 15,
-                ),
-                _buildCityName(),
-                _buildTemperature()
-              ]),
-            ))));
+    return StreamBuilder(
+        stream: _currentWeatherBloc.currentWeatherStream,
+        builder: (_, AsyncSnapshot<Map<String, String>> snaphot) {
+          if (snaphot.hasData) {
+            currentTemperature = snaphot.data['temp'];
+            currentFeel = snaphot.data['feel'];
+            currentWindSpeed = snaphot.data['wind_speed'];
+            currentWeatherStatus = snaphot.data['weather_status'];
+            icon = matchIcon(snaphot.data['weather_icon']);
+          }
+          return Container(
+              decoration: new BoxDecoration(
+                  color: SolarizedColorScheme.accentFG,
+                  borderRadius: BorderRadius.only(
+                    bottomLeft: Radius.circular(15.0),
+                    bottomRight: Radius.circular(15.0),
+                  )),
+              width: double.infinity,
+              padding: EdgeInsets.fromLTRB(40, 20, 40, 60),
+              child: Container(
+                  padding: EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: SolarizedColorScheme.transparent,
+                  ),
+                  child: Center(
+                      child: Container(
+                    child: Column(children: [
+                      _buildWeatherIcon(icon),
+                      SizedBox(
+                        height: 25,
+                      ),
+                      _buildCityNameWidget(),
+                      _buildWeatherState(currentWeatherStatus),
+                      _buildTemperature(
+                          currentTemperature, currentFeel, currentWindSpeed)
+                    ]),
+                  ))));
+        });
   }
 
   @override
@@ -73,24 +133,23 @@ class CityWeather extends StatelessWidget {
           child: Column(children: [
         _buildUpper(),
         Container(
-            decoration: new BoxDecoration(
-                color: SolarizedColorScheme.secondaryBG,
+            decoration: BoxDecoration(
                 borderRadius: BorderRadius.only(
-                  bottomLeft: Radius.circular(15.0),
-                  bottomRight: Radius.circular(15.0),
-                )),
+              bottomLeft: Radius.circular(15.0),
+              bottomRight: Radius.circular(15.0),
+            )),
             child: Chart()),
         SizedBox(height: 40),
-        Container(
-            // alignment: Alignment.centerLeft,
-            padding: EdgeInsets.fromLTRB(15, 0, 0, 0),
-            child: ThemedText(
-              "NEWS:",
-              35,
-              SolarizedColorScheme.accentFG,
-              weight: FontWeight.w400,
-            )),
-        NewsFeed(),
+        // Container(
+        //     // alignment: Alignment.centerLeft,
+        //     padding: EdgeInsets.fromLTRB(15, 0, 0, 0),
+        //     child: ThemedText(
+        //       "NEWS:",
+        //       35,
+        //       SolarizedColorScheme.accentFG,
+        //       weight: FontWeight.w400,
+        //     )),
+        // NewsFeed(),
       ])),
     );
   }
