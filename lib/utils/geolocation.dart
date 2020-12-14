@@ -1,6 +1,7 @@
 import 'package:bloc_pattern/bloc_pattern.dart';
-import 'package:weatherApp/bloc/cityBloc.dart';
 import 'package:geolocator/geolocator.dart';
+
+import 'package:weatherApp/bloc/cityBloc.dart';
 
 Future<Position> getLatLon() async {
   final Geolocator geolocator = Geolocator()..forceAndroidLocationManager;

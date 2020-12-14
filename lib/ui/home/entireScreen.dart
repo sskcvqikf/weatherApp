@@ -4,14 +4,16 @@ import 'package:weather_icons/weather_icons.dart';
 
 import 'package:weatherApp/utils/colors.dart';
 import 'package:weatherApp/utils/geolocation.dart';
+import 'package:weatherApp/utils/matchIcon.dart';
+
+import 'package:weatherApp/requests/weatherLogic.dart';
+
 import 'package:weatherApp/bloc/cityBloc.dart';
 import 'package:weatherApp/bloc/currentWeatherBloc.dart';
-import 'package:weatherApp/utils/matchIcon.dart';
-import 'package:weatherApp/requests/weather.dart';
 
-import '../common/common.dart';
-import 'chart.dart';
-import 'news.dart';
+import 'package:weatherApp/ui/common/common.dart';
+import 'package:weatherApp/ui/home/chart.dart';
+import 'package:weatherApp/ui/home/news.dart';
 
 class CityWeather extends StatefulWidget {
   @override
@@ -29,6 +31,13 @@ class _CityWeatherState extends State<CityWeather> {
   String currentWindSpeed;
   String currentWeatherStatus;
   IconData icon = WeatherIcons.earthquake;
+
+  @override
+  void dispose() {
+    _cityBloc.dispose();
+    _currentWeatherBloc.dispose();
+    super.dispose();
+  }
 
   @override
   initState() {
@@ -140,16 +149,16 @@ class _CityWeatherState extends State<CityWeather> {
             )),
             child: Chart()),
         SizedBox(height: 40),
-        // Container(
-        //     // alignment: Alignment.centerLeft,
-        //     padding: EdgeInsets.fromLTRB(15, 0, 0, 0),
-        //     child: ThemedText(
-        //       "NEWS:",
-        //       35,
-        //       SolarizedColorScheme.accentFG,
-        //       weight: FontWeight.w400,
-        //     )),
-        // NewsFeed(),
+        Container(
+            // alignment: Alignment.centerLeft,
+            padding: EdgeInsets.fromLTRB(15, 0, 0, 0),
+            child: ThemedText(
+              "NEWS:",
+              35,
+              SolarizedColorScheme.accentFG,
+              weight: FontWeight.w400,
+            )),
+        NewsFeed(),
       ])),
     );
   }

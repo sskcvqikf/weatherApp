@@ -1,15 +1,32 @@
+import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:bloc_pattern/bloc_pattern.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:flutter/material.dart';
-import 'package:weatherApp/utils/colors.dart';
-import 'package:weatherApp/bloc/forecastBloc.dart';
-import '../common/common.dart';
 
-class Chart extends StatelessWidget {
+import 'package:weatherApp/utils/colors.dart';
+
+import 'package:weatherApp/bloc/forecastBloc.dart';
+
+import 'package:weatherApp/ui/common/common.dart';
+
+class Chart extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    return _ChartState();
+  }
+}
+
+class _ChartState extends State<Chart> {
   final _forecastBloc = BlocProvider.getBloc<ForecastBloc>();
   List<FlSpot> temp = [FlSpot(1.0, 1.0)];
   List<FlSpot> feel = [FlSpot(1.0, 1.0)];
+
+  @override
+  void dispose() {
+    print('Dispose chart');
+    _forecastBloc.dispose();
+    super.dispose();
+  }
 
   Widget _buildChart() {
     return StreamBuilder(

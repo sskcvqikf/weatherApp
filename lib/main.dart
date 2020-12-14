@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:bloc_pattern/bloc_pattern.dart';
+
 import 'package:weatherApp/bloc/cityBloc.dart';
 import 'package:weatherApp/bloc/currentWeatherBloc.dart';
 import 'package:weatherApp/bloc/forecastBloc.dart';
-import 'ui/home/home.dart';
-import 'package:flutter/services.dart';
+import 'package:weatherApp/bloc/newsBloc.dart';
+
+import 'package:weatherApp/ui/home/home.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
@@ -22,6 +25,7 @@ class MyApp extends StatelessWidget {
           Bloc<CityBloc>((i) => CityBloc()),
           Bloc<CurrentWeatherBloc>((i) => CurrentWeatherBloc()),
           Bloc<ForecastBloc>((i) => ForecastBloc()),
+          Bloc<NewsBloc>((i) => NewsBloc()),
         ],
         child: MaterialApp(
           title: 'Weather',

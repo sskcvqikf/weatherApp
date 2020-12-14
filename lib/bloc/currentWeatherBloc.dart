@@ -1,5 +1,4 @@
-import 'dart:async';
-
+import 'dart:async' show Stream, StreamController;
 import 'package:bloc_pattern/bloc_pattern.dart';
 
 class CurrentWeatherBloc extends BlocBase {
